@@ -20,3 +20,6 @@ The rise of fake news is a problem because it is becoming increasingly difficult
 Not too long ago, while I was visiting family for the holidays, there was an animated dinner-table discussion where parties could not even agree on the most basic facts. Each party would speak their own truth, presenting news articles/sources that they were most familiar with. As a bystander, I knew that fake news was to blame, since I consider all the parties involved to be logical and well-reasoned individuals.
 
 ## Data
+1. ISOT: dataset provided by the University of Victoria's Information Security and Object Technology (ISOT) research lab. The articles range from the time period: 2016 - 2017.<sup>[3](https://www.uvic.ca/engineering/ece/isot/datasets/fake-news/index.php)</sup>
+2. Kaggle: dataset provided by University of Tennessee's Machine Learning Club.<sup>[4](https://www.kaggle.com/c/fake-news/overview)</sup> An effort was made to gain additional insights on the origins of the data, but no further description was provided. <sup>[5](https://ibb.co/ZgZ3XkH)</sup>
+3. DataFlair: <sup>[6](https://data-flair.training/blogs/advanced-python-project-detecting-fake-news/)</sup>
