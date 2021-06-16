@@ -35,6 +35,12 @@ I created different columns where I performed various text-cleaning methods (tok
 * `text_porter_stemmed` - `text_tokenized_string` stemmed based on porter stemmer
 * `text_lancaster_stemmed` - `text_tokenized_string` stemmed based on lancaster stemmer
 
+Here are several frequency distributions based on the words of an article (stop words removed and stemmed):
+
+![image](https://user-images.githubusercontent.com/78755809/122260559-6be29500-cea1-11eb-8504-dde4ef225258.png)
+![image](https://user-images.githubusercontent.com/78755809/122260569-6edd8580-cea1-11eb-8e9e-b8e65c09bfc2.png)
+
+
 ## Modeling Process
 
 ### Managing Class Imbalance
