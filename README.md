@@ -27,66 +27,74 @@ Not too long ago, while I was visiting family for the holidays, there was an ani
 After removing nulls, the data sources aggregate to 71,436 articles. A label of 0 indicates that an article is real, while a label of 1 indicates that an article is fake.
 
 I created different columns where I performed various text-cleaning methods (tokenizing, removing punctuation/numbers, lemmatizing, stemming). Here is a summary of the columns I would go on to model and what they represent:
-* `text` - raw text from article
-* `title` - title of article
-* `text_tokenized_string` - text with stop words, punctuation, whitespaces, and Reuters heading removed
-* `text_pos_lemmatized` - text lemmatized based on part-of-speech tagging
-* `text_snowball_stemmed` - text stemmed based on snowball stemmer
-* `text_porter_stemmed` - text stemmed based on porter stemmer
-* `text_lancaster_stemmed` - text stemmed based on lancaster stemmer
+* `text_cleaned` - text from article with Reuters heading removed, punctuation, whitespaces and numbers removed
+* `title` - raw title of article
+* `text_tokenized_string` - `text_cleaned` with stop words removed
+* `text_pos_lemmatized` - `text_tokenized_string` lemmatized based on part-of-speech tagging
+* `text_snowball_stemmed` - `text_tokenized_string` stemmed based on snowball stemmer
+* `text_porter_stemmed` - `text_tokenized_string` stemmed based on porter stemmer
+* `text_lancaster_stemmed` - `text_tokenized_string` stemmed based on lancaster stemmer
 
 ## Modeling Process
 
 ### Managing Class Imbalance
-After cleaning and exploring the data, substantial thought went into managing class imbalance. While my raw data consisted of a roughly 50/50 split between real/fake articles, research had to be done to determine what the "real-world" distribution was between real and fake news articles, in order to best train a model. According to VOX, in 2020, 17% of engagement with the top 100-performing news sources on social media was dubious.<sup>[7](https://www.vox.com/policy-and-politics/2020/12/22/22195488/fake-news-social-media-2020)</sup> Based on this, I created an imbalanced dataset, with an 80/20 split between real/fake articles, that was to be used for modeling.
+After cleaning and exploring the data, substantial thought went into managing class imbalance. While my raw data consisted of a roughly 50/50 split between real/fake articles, research had to be done to determine what the "real-world" distribution was between real and fake news articles, in order to best train a model. According to VOX, in 2020, 17% of engagement with the top 100-performing news sources on social media was dubious.<sup>[7](https://www.vox.com/policy-and-politics/2020/12/22/22195488/fake-news-social-media-2020)</sup> Based on this, I created an imbalanced dataset, with an 80/20 split between real/fake articles, that was to be used for modeling. I've taken care to respect this imbalance for all iterations of my cross-validation process.
 
 After train/test splitting the imbalanced dataset, my training set consisted of 26,231 real articles and 6,836 fake articles.
 
 ### Model Evaluation
 Before running different models, I had to decide how I was going to evaluate the performance of the different models. In the context of fake news, my method of evaluation was to put the strongest emphasis on keeping the False Negative Rate as low as possible (when a news article is fake, how often does my model predict it to be real), since it would be detrimental to the credibility of my model to classify a fake article as real. With this in mind, other metrics I considered were to have a False Positive Rate, and a high F1 Score.
 
-The baseline for my model results, using a dummy classifier, produced a cross-validation score of **79%**.
+The baseline for my model results, using a dummy classifier, produced a cross-validation accurcacy score of **79%**.
 
 ### Narrowing Down Algorithms
-The first question I wanted to answer in my modeling process was to narrow down the algorithms for grid-searching later on. After using TFIDFVectorizer on the `text` data, I explored a series of algorithms (Multinomial Naive Bayes, Random Forest Classifier, Passive Aggressive Classifier, XGBoost, AdaBoost, Extra Tree Classifier), and saw that the Passive Aggressive Classifer (PAC) and XGBoost (XGB) were the highest performing with cross-validation scores of **96.1%**, False Negative Rates of **11.7%**, and F1 Scores of **90.3%**.
+The first question I wanted to answer in my modeling process was to narrow down the algorithms for grid-searching later on. After using TFIDFVectorizer on the `text` field, I explored a series of algorithms (Multinomial Naive Bayes, Random Forest Classifier, Passive Aggressive Classifier, XGBoost, AdaBoost, Extra Tree Classifier), and saw that the Passive Aggressive Classifer (PAC) and XGBoost (XGB) were the highest performing with the highest scores for XGB being cross-validation accuracy score of **95.4%**, False Negative Rates of **13.5%**, and F1 Scores of **88.6%**.
 
 ### Narrowing Down Data
-Because TFIDFVectorizer looks to perform data-cleaning, my next step was to see whether  manual text-cleaning (tokenizing, lemmatizing, stemming) would outperform the vectorizer's cleaning of raw text field. 
+Because TFIDFVectorizer looks to perform data-cleaning, my next step was to see whether the manually cleaned fields (removing stop words, lemmatizing, stemming) would outperform the vectorizer's cleaning of the `text_cleaned` field. 
 - As expected, the title of an article (`title`) was not a stronger predictor than the body of the article (`text`)
-- Manual cleaning and tokenizing (`text_tokenized_string`) did not improve results
+- Removal of stop words (`text_tokenized_string`) did not improve results
 - Lemmatizing (`text_pos_lemmatized`) did not improve results
 - Out of the stemmers, the porter stemmer (`text_porter_stemmed`) provided the strongest results. However, stemming overall did not improve results.
 
 ### GridSearch
-Now that we've narrowed down the algorithms to PAC and XGB, and our data to the raw text (`text`) of the article, I first performed a GridSearch in order to find the parameters that would optimize my vectorizer.
-* TFIDFVectorizer:
-    * no stop word removal
+Now that we've narrowed down the algorithms to PAC and XGB, and narrowed our data to the raw text of the article, I then looked to performed a GridSearch in order to find the parameters that would optimize my vectorizer:
+* TFIDFVectorizer
+    * no stop word removal (default parameter)
     * extract unigrams and bigrams
-    * build vocabulary that only consider the top features ordered by term frequency
+    * build vocabulary that only consider the top features ordered by term frequency (default parameter)
 
-Using these parameters, PAC and XGB results improved to approximately **96.7%** cross-validation score, **11.6%** False Negative Rate, and F1 Scores **91.7%**
-
-Can further improvements be made by fine-tuning the PAC and XGB algorithms?
-* PAC:
-    * max iterations of 1000
-* XGB:
+Next, I looked to fine-tuning the PAC and XGB algorithms and found the following optimizations:
+* PAC
+    * 0.1 regularization parameter
+    * hinge as the loss function
+    * 100 iterations
+* XGB
     * gbtree learner
-    * max depth of 9
+    * max depth of 6
 
-RESULTS
+One last GridSearch I explored was to oversample/undersample the minority/majority class using SMOTE/RandomUnderSampler:
+* SMOTE
+    * over-sample minority class with 1:3 ratio of Fake:Real news
+* RandomUnderSampler
+    * under-sample majority with 1:3 ratio of Fake:Real news
 
-One last improvement I explored was to undersample the majority class / oversample the minority class.
-<ul>
-<li>SMOTE:</li>
-<ul>
-<li>param1</li>
-</ul>
-</li>
-<li>RandomUnderSampler:</li>
-<ul>
-<li>param1</li>
-</ul>
+### Final Model
+After performing various grid searches, the best model was the Passive Aggressive Classifier, which boasts a cross-validation accuracy score of **place_holder**, a False Negative Rate of **place_holder**, and an F1 Score of **place_holder**.
 
-FINAL RESULTS
+After re-fitting my optimized model on my training set to make predictions on my test set, my optimized model had a test set accuracy score of **place_holder**! In addition, my model had a False Negative Rate of **place_holder** on the test set.
 
+## Conclusion
+
+## Contact Information
+For any additional questions, please contact me at **dt1086@stern.nyu.edu**
+
+## Repository Structure
+```
+├── README.md                                         <- The top-level README for reviewers of this project
+├── Modeling.ipynb                                    <- Modeling and Optimization in Jupyter Notebook
+├── EDA.ipynb                                         <- Exploratory Data Exploration in Jupyter Notebook 
+├── Data                                              <- Sourced externally
+└── 
+```
 
