@@ -80,11 +80,14 @@ One last GridSearch I explored was to oversample/undersample the minority/majori
     * under-sample majority with 1:3 ratio of Fake:Real news
 
 ### Final Model
-After performing various grid searches, the best model was the Passive Aggressive Classifier, which boasts a cross-validation accuracy score of **place_holder**, a False Negative Rate of **place_holder**, and an F1 Score of **place_holder**.
+After performing various grid searches, the best model was the Passive Aggressive Classifier, which boasts a cross-validation accuracy score of **96.3%**, a False Negative Rate of **10.8%**, and an F1 Score of **91.0%**.
 
-After re-fitting my optimized model on my training set to make predictions on my test set, my optimized model had a test set accuracy score of **place_holder**! In addition, my model had a False Negative Rate of **place_holder** on the test set.
+After re-fitting my optimized model on my training set to make predictions on my test set, my optimized model had a test set accuracy score of **96.5%**! In addition, my model had a False Negative Rate of **10.2%** on the test set.
 
-## Conclusion
+### Model Interpretation
+The features with the highest positive coefficients in predicting an article to be fake are: 'hillary', 'on october', 'america', 'obama', and 'fbi'. <br>
+The features which with the highest negative coefficients in predicting an article to be real are: 'on twitter', 'president donald'.
+
 
 ## Contact Information
 For any additional questions, please contact me at **dt1086@stern.nyu.edu**
@@ -94,7 +97,6 @@ For any additional questions, please contact me at **dt1086@stern.nyu.edu**
 ├── README.md                                         <- The top-level README for reviewers of this project
 ├── Modeling.ipynb                                    <- Modeling and Optimization in Jupyter Notebook
 ├── EDA.ipynb                                         <- Exploratory Data Exploration in Jupyter Notebook 
-├── Data                                              <- Sourced externally
-└── 
+└──  Data                                             <- Sourced externally
 ```
 
