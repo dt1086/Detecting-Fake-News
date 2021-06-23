@@ -54,30 +54,29 @@ Before running different models, I had to decide how I was going to evaluate the
 The baseline for my model results, using a dummy classifier, produced a cross-validation accurcacy score of **79%**.
 
 ### Narrowing Down Algorithms
-The first question I wanted to answer in my modeling process was to narrow down the algorithms for grid-searching later on. After using TFIDFVectorizer on the `text` field, I explored a series of algorithms (Multinomial Naive Bayes, Random Forest Classifier, Passive Aggressive Classifier, XGBoost, AdaBoost, Extra Tree Classifier), and saw that the Passive Aggressive Classifer (PAC) and XGBoost (XGB) were the highest performing with the highest scores for XGB being cross-validation accuracy score of **95.4%**, False Negative Rates of **13.5%**, and F1 Scores of **88.6%**.
+The first question I wanted to answer in my modeling process was to narrow down the algorithms for grid-searching later on. After using TFIDFVectorizer on the `text` field, I explored a series of algorithms (Multinomial Naive Bayes, Random Forest Classifier, Passive Aggressive Classifier, XGBoost, AdaBoost, Extra Tree Classifier), and saw that the Passive Aggressive Classifer (PAC) and XGBoost (XGB) were the highest performing with PAC having the highest cross-validation accuracy score of **93.6%**, False Negative Rate of **19.4%**, and F1 Score of **83.9%**.
 
 ### Narrowing Down Data
-Because TFIDFVectorizer looks to perform data-cleaning, my next step was to see whether the manually cleaned fields (removing stop words, lemmatizing, stemming) would outperform the vectorizer's cleaning of the `text_cleaned` field. 
+Because TFIDFVectorizer looks to perform data-cleaning, my next step was to see whether the manually cleaned fields (removing stop words, lemmatizing, stemming) would outperform the vectorizer's cleaning of the `text_cleaned` field
 - As expected, the title of an article (`title`) was not a stronger predictor than the body of the article (`text`)
-- Removal of stop words (`text_tokenized_string`) did not improve results
+- Removal of stop words (`text_tokenized_string`) actually had a slightly higher cross-validation accuracy score, but the False Negative Rate was **19.5%**
 - Lemmatizing (`text_pos_lemmatized`) did not improve results
-- Out of the stemmers, the porter stemmer (`text_porter_stemmed`) provided the strongest results. However, stemming overall did not improve results.
+- Out of the stemmers, the porter stemmer (`text_porter_stemmed`) provided the strongest results. However, stemming overall did not improve results
 
 ### GridSearch
 Now that we've narrowed down the algorithms to PAC and XGB, and narrowed our data to the raw text of the article, I then looked to performed a GridSearch in order to find the parameters that would optimize my vectorizer:
 * TFIDFVectorizer
-    * no stop word removal (default parameter)
+    * no stop word removal (default parameter) for PAC; removal of stop words for XGB
     * extract unigrams and bigrams
-    * build vocabulary that only consider the top features ordered by term frequency (default parameter)
 
 Next, I looked to fine-tuning the PAC and XGB algorithms and found the following optimizations:
 * PAC
     * 0.1 regularization parameter
     * hinge as the loss function
-    * 100 iterations
+    * 1000 iterations
 * XGB
     * gbtree learner
-    * max depth of 6
+    * max depth of 9
 
 One last GridSearch I explored was to oversample/undersample the minority/majority class using SMOTE/RandomUnderSampler:
 * SMOTE
@@ -86,13 +85,21 @@ One last GridSearch I explored was to oversample/undersample the minority/majori
     * under-sample majority with 1:3 ratio of Fake:Real news
 
 ### Final Model
-After performing various grid searches, the best model was the Passive Aggressive Classifier, which boasts a cross-validation accuracy score of **96.3%**, a False Negative Rate of **10.8%**, and an F1 Score of **91.0%**.
+After performing various grid searches, the best model was the Passive Aggressive Classifier, which boasts a cross-validation accuracy score of **94.6%**, a False Negative Rate of **17.7%**, and an F1 Score of **86.5%**.
 
-After re-fitting my optimized model on my training set to make predictions on my test set, my optimized model had a test set accuracy score of **96.5%**! In addition, my model had a False Negative Rate of **10.2%** on the test set.
+After re-fitting my optimized model on my training set to make predictions on my test set, my optimized model had a test set accuracy score of **94.8%**! In addition, my model had a False Negative Rate of **17.8%** on the test set.
+
+Please see it's confusion matrix below: <br>
+![image](https://user-images.githubusercontent.com/78755809/123160268-f5fba200-d43b-11eb-9446-4e75473163d5.png)
+
 
 ### Model Interpretation
-The features with the highest positive coefficients in predicting an article to be fake are: 'hillary', 'on october', 'america', 'obama', and 'fbi'. <br>
-The features which with the highest negative coefficients in predicting an article to be real are: 'on twitter', 'president donald'.
+The features with the highest positive coefficients in predicting an article to be fake are: 'hillary', 'america', 'fbi', and 'realdonaldtrump'. <br>
+The features which with the highest negative coefficients in predicting an article to be real are: 'president donald', 'us president' 'spokesman' and 'reporters'.
+
+## Model Implementation
+Using the Flask app, I was able to implement my model. Users can copy and paste the body of a news article they're reading and my model will return a prediction on whether the news article is real or fake. Please see a screenshot of the app below: <br>
+![image](https://user-images.githubusercontent.com/78755809/123160071-c187e600-d43b-11eb-8a22-cd2606b09801.png)
 
 
 ## Contact Information
@@ -103,6 +110,7 @@ For any additional questions, please contact me at **dt1086@stern.nyu.edu**
 ├── README.md                                         <- The top-level README for reviewers of this project
 ├── Modeling.ipynb                                    <- Modeling and Optimization in Jupyter Notebook
 ├── EDA.ipynb                                         <- Exploratory Data Exploration in Jupyter Notebook 
+├── Final Notebook - Combined.ipynb                   <- Combined EDA + Modeling in Jupyter Notebook
 └──  Data                                             <- Sourced externally
 ```
 
